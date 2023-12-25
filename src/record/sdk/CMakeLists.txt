@@ -40,7 +40,7 @@ target_link_libraries(k4arecord PRIVATE
     k4ainternal::record
     k4ainternal::playback
     k4ainternal::logging
-    EBML::ebml
+    ebml::ebml
     Matroska::matroska
 )
 

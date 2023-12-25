@@ -22,14 +22,14 @@ target_include_directories(k4a_playback PUBLIC
 target_link_libraries(k4a_record PUBLIC 
     k4a::k4a
     k4ainternal::logging
-    EBML::ebml
+    ebml::ebml
     Matroska::matroska
 )
 
 target_link_libraries(k4a_playback PUBLIC 
     k4a::k4a
     k4ainternal::logging
-    EBML::ebml
+    ebml::ebml
     Matroska::matroska
     libyuv::libyuv
     libjpeg-turbo::libjpeg-turbo
