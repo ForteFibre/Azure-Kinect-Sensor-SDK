@@ -7,6 +7,7 @@
 // System headers
 //
 #include <algorithm>
+#include <cstdint>
 
 // Library headers
 //
@@ -36,7 +37,7 @@ public:
                                               const DepthPixel &min,
                                               const DepthPixel &max)
     {
-        constexpr uint8_t PixelMax = std::numeric_limits<uint8_t>::max();
+        constexpr uint8_t PixelMax = UINT8_MAX;
 
         // Default to opaque black.
         //
@@ -90,7 +91,7 @@ public:
         //
         DepthPixel pixelValue = std::min(value, max);
 
-        constexpr uint8_t PixelMax = std::numeric_limits<uint8_t>::max();
+        constexpr uint8_t PixelMax = UINT8_MAX;
         const auto normalizedValue = static_cast<uint8_t>((pixelValue - min) * (double(PixelMax) / (max - min)));
 
         // All color channels are set the same (image is greyscale)

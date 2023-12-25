@@ -107,7 +107,7 @@ static_assert(CLUSTER_WRITE_DELAY_NS >= MAX_CLUSTER_LENGTH_NS * 2, "Cluster writ
     }
 
 // make_unique is C++14 only
-template<typename T, typename... Args> std::unique_ptr<T> make_unique(Args &&... args)
+template<typename T, typename... Args> std::unique_ptr<T> make_unique(Args &&...args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
@@ -142,7 +142,7 @@ public:
     LargeFileIOCallback(const char *path, const open_mode mode);
     ~LargeFileIOCallback() override;
 
-    uint32 read(void *buffer, size_t size) override;
+    size_t read(void *buffer, size_t size) override;
     void setFilePointer(int64 offset, libebml::seek_mode mode = libebml::seek_beginning) override;
     size_t write(const void *buffer, size_t size) override;
     uint64 getFilePointer() override;
@@ -195,17 +195,19 @@ static const k4a_color_resolution_t color_resolutions[] = { K4A_COLOR_RESOLUTION
                                                             K4A_COLOR_RESOLUTION_1440P, K4A_COLOR_RESOLUTION_1536P,
                                                             K4A_COLOR_RESOLUTION_2160P, K4A_COLOR_RESOLUTION_3072P };
 
-static const std::pair<k4a_depth_mode_t, std::string> depth_modes[] =
-    { { K4A_DEPTH_MODE_NFOV_2X2BINNED, "NFOV_2X2BINNED" },
-      { K4A_DEPTH_MODE_NFOV_UNBINNED, "NFOV_UNBINNED" },
-      { K4A_DEPTH_MODE_WFOV_2X2BINNED, "WFOV_2X2BINNED" },
-      { K4A_DEPTH_MODE_WFOV_UNBINNED, "WFOV_UNBINNED" },
-      { K4A_DEPTH_MODE_PASSIVE_IR, "PASSIVE_IR" } };
+static const std::pair<k4a_depth_mode_t, std::string> depth_modes[] = {
+    { K4A_DEPTH_MODE_NFOV_2X2BINNED, "NFOV_2X2BINNED" },
+    { K4A_DEPTH_MODE_NFOV_UNBINNED, "NFOV_UNBINNED" },
+    { K4A_DEPTH_MODE_WFOV_2X2BINNED, "WFOV_2X2BINNED" },
+    { K4A_DEPTH_MODE_WFOV_UNBINNED, "WFOV_UNBINNED" },
+    { K4A_DEPTH_MODE_PASSIVE_IR, "PASSIVE_IR" }
+};
 
-static const std::pair<k4a_wired_sync_mode_t, std::string> external_sync_modes[] =
-    { { K4A_WIRED_SYNC_MODE_STANDALONE, "STANDALONE" },
-      { K4A_WIRED_SYNC_MODE_MASTER, "MASTER" },
-      { K4A_WIRED_SYNC_MODE_SUBORDINATE, "SUBORDINATE" } };
+static const std::pair<k4a_wired_sync_mode_t, std::string> external_sync_modes[] = {
+    { K4A_WIRED_SYNC_MODE_STANDALONE, "STANDALONE" },
+    { K4A_WIRED_SYNC_MODE_MASTER, "MASTER" },
+    { K4A_WIRED_SYNC_MODE_SUBORDINATE, "SUBORDINATE" }
+};
 
 } // namespace k4arecord
 
