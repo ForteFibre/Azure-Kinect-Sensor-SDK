@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 set(CMAKE_CUDA_ARCHITECTURES 53)
-set(CMAKE_CUDA_COMPILER /usr/local/cuda-10.2/bin/nvcc)
+# set(CMAKE_CUDA_COMPILER /usr/local/cuda-10.2/bin/nvcc)
 enable_language(CUDA)
 find_package(CUDAToolkit)
 

@@ -4,17 +4,15 @@ on:
   workflow_dispatch: {}
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: nvidia/cuda:12.3.1-devel-ubuntu22.04
     steps:
-      - uses: actions/checkout@v3
-      - name: Clone submodules
-        run: |
-          git submodule update --init --recursive
-
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev \
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y libgl1-mesa-dev \
             libsoundio-dev \
             libjpeg-dev \
             libvulkan-dev \
@@ -25,14 +23,26 @@ jobs:
             libusb-1.0-0-dev \
             libssl-dev \
             libudev-dev \
+            libopencv-dev \
             mesa-common-dev \
-            uuid-dev
+            uuid-dev \
+            build-essential \
+            cmake \
+            git \
+            pkg-config \
+            sudo
+
+      - uses: actions/checkout@v3
+      - name: Clone submodules
+        run: |
+          git config --global --add safe.directory /__w/Azure-Kinect-Sensor-SDK/Azure-Kinect-Sensor-SDK
+          git submodule update --init --recursive
 
       - name: Build
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake .. -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-12.3 -DCMAKE_BUILD_TYPE=Release -DCPACK_PACKAGE_CONTACT=ForteFibre
           make -j
 
       - name: Create packages
