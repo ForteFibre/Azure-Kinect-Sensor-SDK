@@ -1,0 +1,45 @@
+name: Build packages
+on:
+  push:
+    branches: "*"
+  workflow_dispatch: {}
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev \
+            libsoundio-dev \
+            libjpeg-dev \
+            libvulkan-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libusb-1.0-0-dev \
+            libssl-dev \
+            libudev-dev \
+            mesa-common-dev \
+            uuid-dev
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j
+
+      - name: Create packages
+        run: |
+          cd build
+          cpack -G DEB
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: build/*.deb
