@@ -12,9 +12,13 @@
 // Dependent libraries
 #include <k4ainternal/common.h>
 #include <k4ainternal/dewrapper.h>
+#include <k4ainternal/depthengine.h>
 
 // System dependencies
 #include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <float.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +38,7 @@ static k4a_version_t g_suggested_fw_version_depth_config = { 6109, 7, 0 }; // 61
 typedef struct _depth_context_t
 {
     depthmcu_t depthmcu;
-    dewrapper_t dewrapper;
+    depthengine_t de;
 
     uint8_t *calibration_memory;
     size_t calibration_memory_size;
@@ -162,12 +166,6 @@ k4a_result_t depth_create(depthmcu_t depthmcu,
 
     if (K4A_SUCCEEDED(result))
     {
-        depth->dewrapper = dewrapper_create(&depth->calibration, capture_ready, capture_ready_context);
-        result = K4A_RESULT_FROM_BOOL(depth->dewrapper != NULL);
-    }
-
-    if (K4A_SUCCEEDED(result))
-    {
         // SDK may have crashed last session, so call stop
         depth->running = true;
         bool quiet = true;
@@ -180,6 +178,8 @@ k4a_result_t depth_create(depthmcu_t depthmcu,
         *depth_handle = NULL;
     }
 
+    depthengine_create(&depth->de, capture_ready, capture_ready_context);
+
     return result;
 }
 
@@ -191,14 +191,12 @@ void depth_destroy(depth_t depth_handle)
     bool quiet = false;
     depth_stop_internal(depth_handle, quiet);
 
-    if (depth->dewrapper)
-    {
-        dewrapper_destroy(depth->dewrapper);
-    }
     if (depth->calibration_memory != NULL)
     {
         free(depth->calibration_memory);
     }
+
+    depthengine_destroy(&depth->de);
 
     depth_t_destroy(depth_handle);
 }
@@ -266,6 +264,8 @@ static void log_device_info(depth_context_t *depth)
 void depth_capture_available(k4a_result_t cb_result, k4a_image_t image_raw, void *context)
 {
     depth_context_t *depth = (depth_context_t *)context;
+    (void)depth;
+
     k4a_capture_t capture_raw = NULL;
 
     if (K4A_SUCCEEDED(cb_result))
@@ -278,7 +278,30 @@ void depth_capture_available(k4a_result_t cb_result, k4a_image_t image_raw, void
         capture_set_ir_image(capture_raw, image_raw);
     }
 
-    dewrapper_post_capture(cb_result, capture_raw, depth->dewrapper);
+    // post-capture goes here
+    switch(depth->de.dmode)
+    {
+        case K4A_DEPTH_MODE_NFOV_2X2BINNED:
+        case K4A_DEPTH_MODE_NFOV_UNBINNED:
+        case K4A_DEPTH_MODE_WFOV_2X2BINNED:
+        case K4A_DEPTH_MODE_WFOV_UNBINNED:
+            depthengine_enqueue_frame(capture_raw, &depth->de);
+            break;
+
+        case K4A_DEPTH_MODE_WFOV_2X2BINNED_UNPROCESSED:
+            depth->de.capture_ready_callback(K4A_RESULT_SUCCEEDED,
+                capture_raw,
+                depth->de.capture_ready_callback_context);
+            break;
+
+        default:
+            break;
+    }
+
+    /*if (depth->capture_ready_cb)
+    {
+        depth->capture_ready_cb(cb_result, capture_raw, depth->capture_ready_cb_context);
+    }*/
 
     if (capture_raw)
     {
@@ -392,14 +415,6 @@ k4a_result_t depth_start(depth_t depth_handle, const k4a_device_configuration_t 
 
     if (K4A_SUCCEEDED(result))
     {
-        // Note: Depth Engine Start must be called after the mode is set in the sensor due to the sensor calibration
-        // dependency on the mode of operation
-        result = TRACE_CALL(
-            dewrapper_start(depth->dewrapper, config, depth->calibration_memory, depth->calibration_memory_size));
-    }
-
-    if (K4A_SUCCEEDED(result))
-    {
         result = TRACE_CALL(depthmcu_depth_set_fps(depth->depthmcu, config->camera_fps));
     }
 
@@ -407,6 +422,8 @@ k4a_result_t depth_start(depth_t depth_handle, const k4a_device_configuration_t 
     {
         result = TRACE_CALL(depthmcu_depth_start_streaming(depth->depthmcu, depth_capture_available, depth));
     }
+
+    depthengine_start(&depth->de, config);
 
     if (K4A_FAILED(result))
     {
@@ -433,9 +450,8 @@ void depth_stop_internal(depth_t depth_handle, bool quiet)
     if (depth->running)
     {
         depthmcu_depth_stop_streaming(depth->depthmcu, quiet);
-
-        dewrapper_stop(depth->dewrapper);
     }
+    depthengine_stop(&depth->de);
     depth->running = false;
 }
 
