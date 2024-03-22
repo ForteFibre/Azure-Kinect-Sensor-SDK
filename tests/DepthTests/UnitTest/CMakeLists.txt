@@ -9,7 +9,8 @@ target_link_libraries(depth_ut PRIVATE
     k4ainternal::utcommon
 
     # Link k4ainternal::depth without transitive dependencies
-    $<TARGET_FILE:k4ainternal::depth>
+    k4ainternal::depth
+
     # Link the dependencies of k4ainternal::depth that we do not mock
     CUDA::cudart
     CUDA::cuda_driver
