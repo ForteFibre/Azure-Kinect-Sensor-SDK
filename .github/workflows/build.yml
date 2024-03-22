@@ -16,7 +16,7 @@ jobs:
 
       - name: Build amd64 packages
         run: |
-          docker run --platform linux/arm64 -v $PWD:/ws \
+          docker run --rm --platform linux/arm64 -v $PWD:/ws \
             -w /ws \
             --entrypoint /bin/bash \
             ghcr.io/fortefibre/buildroot:humble-aarch64 \
