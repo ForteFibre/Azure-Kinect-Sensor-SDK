@@ -16,7 +16,7 @@ jobs:
 
       - name: Build
         run: |
-          docker run --platform linux/arm64 -it -v $PWD:/ws \
+          docker run --platform linux/arm64 -v $PWD:/ws \
             -w /ws \
             --entrypoint /bin/bash \
             ghcr.io/fortefibre/buildroot:humble-aarch64 \
