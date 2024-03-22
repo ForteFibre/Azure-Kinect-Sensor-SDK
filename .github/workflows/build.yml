@@ -1,4 +1,4 @@
-name: Build arm64 packages
+name: Build packages
 on:
   push: {}
   workflow_dispatch: {}
@@ -14,13 +14,27 @@ jobs:
           git config --global --add safe.directory /__w/Azure-Kinect-Sensor-SDK/Azure-Kinect-Sensor-SDK
           git submodule update --init --recursive
 
-      - name: Build
+      - name: Build amd64 packages
         run: |
           docker run --platform linux/arm64 -v $PWD:/ws \
             -w /ws \
             --entrypoint /bin/bash \
             ghcr.io/fortefibre/buildroot:humble-aarch64 \
             -c "bash .github/build.bash"
+          mkdir -p artifacts
+          cp build/*.deb artifacts/
+          docker rmi ghcr.io/fortefibre/buildroot:humble-aarch64
+          sudo rm -rf build/
+
+      - name: Build amd64 packages
+        run: |
+          docker run -v $PWD:/ws \
+            -w /ws \
+            --entrypoint /bin/bash \
+            ghcr.io/fortefibre/buildroot:humble-amd64 \
+            -c "bash .github/build.bash"
+          mkdir -p artifacts
+          cp build/*.deb artifacts/
 
       - name: Upload packages
         uses: actions/upload-artifact@v2
