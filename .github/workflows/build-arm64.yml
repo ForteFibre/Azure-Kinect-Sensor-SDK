@@ -1,0 +1,26 @@
+name: Build packages
+on:
+  push: {}
+  workflow_dispatch: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Clone submodules
+        run: |
+          git config --global --add safe.directory /__w/Azure-Kinect-Sensor-SDK/Azure-Kinect-Sensor-SDK
+          git submodule update --init --recursive
+
+      - name: Build
+        run: |
+          docker run --platform linux/arm64 -v $PWD:/ws \
+            -w /ws \
+            ghcr.io/fortefibre/buildroot:humble-aarch64 \
+            bash .github/build.bash
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: build/*.deb
