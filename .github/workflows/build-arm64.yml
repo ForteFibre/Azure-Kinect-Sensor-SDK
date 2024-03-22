@@ -1,4 +1,4 @@
-name: Build packages
+name: Build arm64 packages
 on:
   push: {}
   workflow_dispatch: {}
@@ -16,10 +16,11 @@ jobs:
 
       - name: Build
         run: |
-          docker run --platform linux/arm64 -v $PWD:/ws \
+          docker run --platform linux/arm64 -it -v $PWD:/ws \
             -w /ws \
+            --entrypoint /bin/bash \
             ghcr.io/fortefibre/buildroot:humble-aarch64 \
-            bash .github/build.bash
+            -c "bash .github/build.bash"
 
       - name: Upload packages
         uses: actions/upload-artifact@v2
