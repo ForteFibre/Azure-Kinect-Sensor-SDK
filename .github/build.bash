@@ -14,6 +14,7 @@ apt-get install -y libgl1-mesa-dev \
             libusb-1.0-0-dev \
             libssl-dev \
             libudev-dev \
+            libgtk-3-dev \
             libopencv-dev \
             mesa-common-dev \
             uuid-dev \
