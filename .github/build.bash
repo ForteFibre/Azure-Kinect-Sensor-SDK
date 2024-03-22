@@ -23,9 +23,6 @@ apt-get install -y libgl1-mesa-dev \
             pkg-config \
             sudo
 
-git config --global --add safe.directory /__w/Azure-Kinect-Sensor-SDK/Azure-Kinect-Sensor-SDK
-git submodule update --init --recursive
-
 mkdir build
 cd build
 cmake .. -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
